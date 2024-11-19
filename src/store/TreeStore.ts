@@ -16,11 +16,9 @@ class TreeStore {
       if (!this.parentMap.has(item.parent)) {
         this.parentMap.set(item.parent, new Set());
       }
-      this.parentMap.get(item.parent)?.add(item);
+      const parent = this.parentMap.get(item.parent);
+      if (parent) parent.add(item);
     }
-
-    console.log(this.idMap);
-    console.log(this.parentMap);
   }
 
   getAll(): Item[] {
