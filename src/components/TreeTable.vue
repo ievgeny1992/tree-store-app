@@ -1,5 +1,12 @@
 <template>
   <div>
+    <button @click="toggleEditMode" class="edit-buttom">
+      {{ !editMode ? 'Режим: просмотр' : 'Режим: редактированиe' }}
+    </button>
+    <div class="history-buttons" v-if="editMode">
+      <button>⟲ Назад</button>
+      <button>⟳ Вперед</button>
+    </div>
     <ag-grid-vue
       class="ag-theme-quartz"
       style="height: 500px"
@@ -11,10 +18,9 @@
       :groupDefaultExpanded="groupDefaultExpanded"
       :autoGroupColumnDef="autoGroupColumnDef"
       :defaultColDef="defaultColDef"
-      :editable="editMode"
-      :suppressRowGroupColumns="suppressRowGroupColumns"
     ></ag-grid-vue>
   </div>
+  <!-- <div>{{ editMode }}</div> -->
   <pre> {{ rowData }}</pre>
 </template>
 
@@ -32,9 +38,15 @@ ModuleRegistry.registerModules([ClientSideRowModelModule, RowGroupingModule]);
 
 import TreeStore from '@/store/TreeStore';
 
+//https://www.ag-grid.com/vue-data-grid/component-cell-renderer/
+const ButtonsComponent = {
+  template: '<button>Удалить</button>',
+};
+
 export default defineComponent({
   components: {
     AgGridVue,
+    ButtonsComponent,
   },
 
   setup() {
@@ -53,8 +65,8 @@ export default defineComponent({
     function mapRow(item: any) {
       const children = store.getChildren(item.id);
       return {
-        path: getPath(item),
         ...item,
+        path: getPath(item),
         category: children.length > 0 ? 'Группа' : 'Элемент',
       };
     }
@@ -63,17 +75,33 @@ export default defineComponent({
       return store.getAllParents(item.id).map((parent: any) => parent.label);
     }
 
+    function toggleEditMode() {
+      editMode.value = !editMode.value;
+    }
+
     const columnDefs = reactive([
       {
         field: 'id',
         headerName: 'No п/п',
         cellDataType: 'text',
       },
+      // {
+      //   field: 'category',
+      //   headerName: 'Категория',
+      //   rowGrou: true,
+      // },
       {
         field: 'label',
         headerName: 'Наименование',
+        // cellRenderer: 'ButtonsComponent',
       },
     ]);
+
+    const autoGroupColumnDef = reactive({
+      headerName: 'Категория',
+      field: 'category',
+      cellRendererParams: { suppressCount: true },
+    });
 
     const rowData = reactive(store.getAll().map(mapRow));
 
@@ -82,11 +110,7 @@ export default defineComponent({
     const getDataPath = (data: any) => data.path;
     const defaultColDef = ref({
       flex: 1,
-    });
-    const autoGroupColumnDef = reactive({
-      headerName: 'Категория',
-      field: 'category',
-      cellRendererParams: { suppressCount: true },
+      editable: editMode,
     });
 
     return {
@@ -99,9 +123,18 @@ export default defineComponent({
       editMode,
       getDataPath,
       store,
+      toggleEditMode,
     };
   },
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.edit-buttom {
+  background: transparent;
+  border: none;
+  padding: 10px 0px;
+  cursor: pointer;
+  color: #0096ff;
+}
+</style>
