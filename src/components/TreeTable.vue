@@ -85,11 +85,6 @@ export default defineComponent({
         headerName: 'No п/п',
         cellDataType: 'text',
       },
-      // {
-      //   field: 'category',
-      //   headerName: 'Категория',
-      //   rowGrou: true,
-      // },
       {
         field: 'label',
         headerName: 'Наименование',
